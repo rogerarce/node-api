@@ -9,4 +9,5 @@ if (config.error) {
 export default {
     PORT: process.env.PORT,
     DEV: process.env.DEV,
+    TOKEN_SECRET: process.env.TOKEN_SECRET,
 };
