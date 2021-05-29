@@ -1,6 +1,12 @@
 name: learn-github-actions
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - develop
 
 jobs:
   build:
