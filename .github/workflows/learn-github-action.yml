@@ -57,3 +57,11 @@ jobs:
           tags: rogerarce/todo-api:latest, rogerarce/todo-api:${{ github.run_number }}
           cache-from: type=registry,ref=user/app:latest
           cache-to: type=inline
+      -
+        name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: format('Post Message - {0} {1}', ${{ job.status }}, ':rocket:')
