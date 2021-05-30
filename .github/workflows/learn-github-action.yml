@@ -39,7 +39,7 @@ jobs:
         id: build-cache
         with:
           path: ./build
-          keys: ${{ github.sha }}
+          key: ${{ github.sha }}
   dockerhub-publisher:
     runs-on: ubuntu-latest
     needs: [build]
