@@ -2,22 +2,23 @@ import bodyParser from "body-parser";
 import config from './config';
 import routes from './api';
 // @ts-ignore
-import express from 'express';
+import express, {NextFunction, Request, Response} from 'express';
 
 function startServer() {
     const app = express();
 
     app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({extended: true}));
 
     app.use('/api', routes());
 
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
         const notFound = new Error('Resource not found!');
         notFound['status'] = 404
         next(notFound);
     });
 
-    app.use((err, req, res, next) => {
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
         return res
             .status(err.status)
             .send({ message: err.message })
