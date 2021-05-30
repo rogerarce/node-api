@@ -1,26 +1,21 @@
 module.exports = {
-    moduleFileExtensions: [
-        'js',
-        'ts',
-        'json'
-    ],
+    moduleFileExtensions: ['js','ts','json'],
     preset: 'ts-jest',
     testEnvironment: 'node',
-    testMatch: [
-        // '**/?(*.)+(spec|test).js?(x)'
-        '**/?(*.)+(spec|test).ts?(x)',
-    ],
-    transform: {
-        '^.+\\.ts?$': 'ts-jest',
-    },
+    testMatch: ['**/?(*.)+(spec|test).ts?(x)'],
+    transform: {'^.+\\.ts?$': 'ts-jest'},
     verbose: true,
     coverageThreshold: {
         global: {
-            branches: 80,
-            functions: 80,
-            lines: 80,
+            branches: 70,
+            functions: 70,
+            lines: 70,
             statements: -10
         }
-    }
-
+    },
+    coveragePathIgnorePatterns: [
+        '/node_modules/',
+        'src/config/',
+        'src/api/middleware/auth.ts'
+    ],
 }
