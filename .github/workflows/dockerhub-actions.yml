@@ -1,0 +1,89 @@
+## Production Workflow includes dockerhub deployment
+name: Node.js - Dockerhub publisher
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v2
+      -
+        name: Use NodeJs ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12.x'
+      -
+        name: Install dependencies
+        run: npm ci
+      -
+        name: Build Project
+        run: npm run build --if-present
+      -
+        name: Setup ENV file
+        run: cp .env.example .env
+      -
+        name: Run tests
+        run: npm test
+      -
+        name: Caching # cached build can be reused if need by 1 of jobs
+        uses: actions/cache@v2
+        id: build-cache
+        with:
+          path: ./build
+          key: ${{ github.sha }}
+      -
+        name: Slack Notification
+        if: ${{ failure() }} # executes step if job fails
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: Todo-api
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: ${{ job.status }}
+          SLACK_ICON: https://raw.githubusercontent.com/rogerarce/files/main/slackbot7.png
+  dockerhub-publisher:
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      -
+        uses: actions/checkout@v2
+      -
+        name: Set Latest Tag Version # Get latest pushed tag
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      -
+        name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to Dockerhub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Publish to DockerHub
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: rogerarce/todo-api:latest, rogerarce/todo-api:${{ steps.vars.outputs.tag }} # tag key from 2nd step
+          cache-from: type=registry,ref=user/app:latest
+          cache-to: type=inline
+      -
+        name: Slack Notification
+        if: ${{ always() }} # executes step always
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_USERNAME: Todo-api
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: general
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_MESSAGE: ${{ job.status }}
+          SLACK_ICON: https://raw.githubusercontent.com/rogerarce/files/main/slackbot7.png
