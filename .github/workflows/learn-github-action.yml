@@ -59,6 +59,7 @@ jobs:
           cache-to: type=inline
       -
         name: Slack Notification
+        if: ${{ always() }} # executes step always
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_USERNAME: Todo-api
