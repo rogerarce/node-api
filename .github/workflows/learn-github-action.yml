@@ -65,4 +65,4 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: general
           SLACK_COLOR: ${{ job.status }}
-          SLACK_MESSAGE: ${{ format('Post Message - {0} {1}', ${{ job.status }}, ':rocket:') }}
+          SLACK_MESSAGE: ${{ job.status }}
