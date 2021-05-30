@@ -45,10 +45,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Docker Build & Push
+        name: Publish to DockerHub
         id: docker_build
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/todo-api:latest, ${{ secrets.DOCKERHUB_USERNAME }}/todo-api:${{ steps.build.outputs.version_tags }}
+          repository: rogerarce/todo-api
+          tags: latest, ${{ github.run_number }}
