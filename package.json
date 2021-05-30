@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "start": "nodemon"
+    "start": "nodemon",
+    "coverage": "jest --coverage=true"
   },
   "keywords": [
     "sample",
