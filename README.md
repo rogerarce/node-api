@@ -1,5 +1,4 @@
 # Test App for Github Actions
-
 [![learn-github-actions](https://github.com/rogerarce/node-api/actions/workflows/learn-github-action.yml/badge.svg?branch=master)](https://github.com/rogerarce/node-api/actions/workflows/learn-github-action.yml)
 
 Node API
@@ -20,7 +19,7 @@ npm start
 ## TODO's
 - [x] Integrate Slack Alerts
 - [ ] Deployment to AWS EBS
----
+
 ## Testing
 - [x] npm test
 - [x] npm run coverage
