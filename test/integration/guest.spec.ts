@@ -39,9 +39,5 @@ describe('Testing guest routes', () => {
 
             expect(response.body).not.toBeNull();
         });
-
-        it('Should not failed', () => {
-            expect(false).toBeTruthy();
-        })
     });
 })
