@@ -1,10 +1,11 @@
 import bodyParser from "body-parser";
 import config from './config';
 import routes from './api';
+import database from './services/database';
 // @ts-ignore
 import express, {NextFunction, Request, Response} from 'express';
 
-function startServer() {
+const startServer = () => {
     const app = express();
 
     app.use(bodyParser.json());
@@ -25,6 +26,11 @@ function startServer() {
             .end();
     });
 
+    database
+        .sync({ force: true })
+        .then()
+        .catch(console.error)
+
     app.listen(config.PORT, () => {
         console.log(`App listening on port ${config.PORT}`);
     }).on('error', (err: any) => {
@@ -33,4 +39,4 @@ function startServer() {
     });
 }
 
-startServer();
+startServer()
