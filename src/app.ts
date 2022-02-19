@@ -20,15 +20,18 @@ const startServer = () => {
     });
 
     app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        console.log({err});
+
         return res
             .status(err.status)
             .send({ message: err.message })
             .end();
     });
 
-    database
-        .sync({ force: true })
-        .then()
+    database()
+        .then(() => {
+            console.log('database connection established');
+        })
         .catch(console.error)
 
     app.listen(config.PORT, () => {

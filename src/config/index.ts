@@ -15,4 +15,5 @@ export default {
     DATABASE_PORT: process.env.DATABASE_PORT,
     DATABASE_USER: process.env.DATABASE_USER,
     DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+    ENVIRONMENT: process.env.ENVIRONMENT,
 };

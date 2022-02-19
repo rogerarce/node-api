@@ -3,46 +3,55 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import routes from '../../src/api';
 import bodyParser from "body-parser";
-import config from "../../src/config";
+import TestHelper from '../test-helper';
+import config from '../../src/config';
 
 const app = express();
 
 // Require on all api endpoint tests
-beforeAll(() => {
+beforeAll(async () => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended: true}));
     app.use('/', routes());
+    await TestHelper.instance.setupDatabase();
+
+    await request(app)
+        .post('/register')
+        .send({ 
+            first_name: 'name',
+            last_name: 'name',
+            email: 'test@gmail.com',
+            password: 'password',
+        });
+});
+
+afterAll(() => {
+    TestHelper.instance.teardownTestDB();
 });
 
 describe('Testing guest routes', () => {
     describe('Test registration route', () => {
-        test('Should respond status code 200', async () => {
-            const response = await request(app).post('/register');
-            expect(response.status).toEqual(200);
-        });
         test('Should response content-type json', async () => {
             const response = await request(app).post('/register');
             expect(response.headers['content-type']).toContain('json');
         });
-        test('Should accept username password', async() => {
+        test('Should respond with success message', async() => {
+            const user = {
+                first_name: "Mark",
+                last_name: "Me",
+                email: "test1@gmail.com",
+                password: "password"
+            }
+
             const response = await request(app)
                 .post('/register')
-                .send({
-                    username: 'test',
-                    password:' password',
-                });
+                .send(user);
 
             expect(response.status).toEqual(200);
         });
-        test('Should respond with success message', async() => {
-            const response = await request(app)
-                .post('/register')
-                .send({
-                    username: 'test',
-                    password:' password',
-                });
-
-            expect(response.body).not.toBeNull();
+        test('Should respond status code 400', async () => {
+            const response = await request(app).post('/register');
+            expect(response.status).toEqual(400);
         });
         // Should respond 403 if required fields are not provided
     });
@@ -53,17 +62,17 @@ describe('Testing guest routes', () => {
             const response = await request(app)
                 .post('/login')
                 .send({
-                    username: 'existing_user@gmail.com',
+                    username: 'test@gmail.com',
                     password: 'password'
                 });
-
+            
             expect(response.status).toEqual(200);
         });
         test('Should response content-type json', async () => {
             const response = await request(app)
                 .post('/login')
                 .send({
-                    username: 'existing_user@gmail.com',
+                    username: 'test@gmail.com',
                     password: 'password'
                 });
 
@@ -73,8 +82,8 @@ describe('Testing guest routes', () => {
            const { body } = await request(app)
                .post('/login')
                .send({
-                   username: 'existing_user@gmail.com',
-                   password: 'password'
+                    username: 'test@gmail.com',
+                    password: 'password'
                });
 
            expect(body.access_token).toBeDefined();
@@ -84,7 +93,7 @@ describe('Testing guest routes', () => {
             const { body } = await request(app)
                 .post('/login')
                 .send({
-                    username: 'existing_user@gmail.com',
+                    username: 'test@gmail.com',
                     password: 'password'
                 });
 
@@ -100,7 +109,7 @@ describe('Testing guest routes', () => {
             const response = await request(app)
                 .post('/login')
                 .send({
-                    username: 'existing_user@gmail.com',
+                    username: 'test@gmail.com',
                 });
 
             expect(response.status).toEqual(400);
@@ -118,7 +127,7 @@ describe('Testing guest routes', () => {
             const response = await request(app)
                 .post('/login')
                 .send({
-                    username: 'existing_user@gmail.com',
+                    username: 'test@gmail.com',
                     password: null,
                 });
 
@@ -144,8 +153,5 @@ describe('Testing guest routes', () => {
 
             expect(response.status).toEqual(400);
         });
-        // Should respond with invalid credentials error provided with incorrect username, password;
-        // Should respond with 404 if user is not found
-        // Should respond with account not activated if user is not confirm
     });
 });

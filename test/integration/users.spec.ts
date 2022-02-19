@@ -3,15 +3,37 @@ import request from 'supertest';
 import jwt from 'jsonwebtoken';
 import routes from '../../src/api';
 import bodyParser from "body-parser";
-import config from "../../src/config";
+import TestHelper from '../test-helper';
 
 const app = express();
+let access_token = null;
 
 // Require on all api endpoint tests
-beforeAll(() => {
+beforeAll(async () => {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({extended: true}));
     app.use('/', routes());
+    await TestHelper.instance.setupDatabase()
+    await request(app)
+        .post('/register')
+        .send({
+            first_name: 'test',
+            last_name: 'test',
+            email: 'test@gmail.com',
+            password: 'password'
+        });
+    const singInResponse = await request(app)
+        .post('/login')
+        .send({
+            username: 'test@gmail.com',
+            password: 'password'
+        });
+
+    access_token = singInResponse.body.access_token;
+});
+
+afterAll(() => {
+    TestHelper.instance.teardownTestDB();
 });
 
 describe('Test "users" route', () => {
@@ -20,18 +42,15 @@ describe('Test "users" route', () => {
 
         describe('Test with valid access_token', () => {
             // @Todo should be replaced with proper fields when signing access_token
-            const access_token = jwt.sign({
-                username: 'sample@test.com',
-                password: 'password'
-            }, config.TOKEN_SECRET);
 
             test('Should respond with 200 provided with valid access_token', async () => {
                 const { status } = await request(app)
                     .get('/user/me')
                     .set('Authorization', 'Bearer ' + access_token)
-
                 expect(status).toEqual(200);
+                
             });
+
             test('Should response content-type json', async () => {
                 const response = await request(app)
                     .get('/user/me')
@@ -39,48 +58,18 @@ describe('Test "users" route', () => {
 
                 expect(response.headers['content-type']).toContain('json');
             });
+
             test('Should respond with object provided with valid access_token', async () => {
                 const { body } = await request(app)
                     .get('/user/me')
                     .set('Authorization', 'Bearer ' + access_token)
 
                 expect(typeof body).toEqual('object');
-            })
-            test('Should respond with object containing user fields provided with valid access_token', async () => {
-                const { body } = await request(app)
-                    .get('/user/me')
-                    .set('Authorization', 'Bearer ' + access_token);
-
-                const keys = Object.keys(body);
-
-                const userFields = {
-                    name: 'sample',
-                };
-
-                expect(keys).toStrictEqual(Object.keys(userFields));
-            })
-            test('Should respond with object containing user fields provided with valid access_token', async () => {
-                const { body } = await request(app)
-                    .get('/user/me')
-                    .set('Authorization', 'Bearer ' + access_token);
-
-                const keys = Object.keys(body);
-
-                const userFields = {
-                    name: 'sample',
-                };
-
-                expect(keys).toStrictEqual(Object.keys(userFields));
-            })
+            });
         });
 
         describe('Test with invalid access_token', () => {
             const invalid_token = jwt.sign({
-                username: 'sample@test.com',
-                password: 'password'
-            }, 'randomKey');
-
-            const access_token = jwt.sign({
                 username: 'sample@test.com',
                 password: 'password'
             }, 'randomKey');
@@ -92,21 +81,24 @@ describe('Test "users" route', () => {
 
                 expect(status).toEqual(401);
             });
-            test('Should respond with 401 if access_token is not placed in "Bearer"', async () => {
-                const { status } = await request(app)
-                    .get('/user/me')
-                    .set('Authorization', 'bearer ' + access_token);
-
-                expect(status).toEqual(401);
-            })
-            test('Should respond with 40 if access_token is not placed in headers authorization field', async () => {
-                const { status } = await request(app)
-                    .get('/user/me')
-                    .set('x-authorization-token', access_token);
-
-                expect(status).toEqual(401);
-            })
         });
+
+        describe('Test authenticated user data', () => {
+            test('Should respond with authenticated users data', async () => {
+                const { body } = await request(app)
+                    .get('/user/me')
+                    .set('Authorization', 'Bearer ' + access_token);
+
+                const user = {
+                    user_id: '',
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                };
+
+                expect(Object.keys(body)).toStrictEqual(Object.keys(user));
+            });
+        })
 
     });
 });
