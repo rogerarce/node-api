@@ -1,10 +1,11 @@
 import bodyParser from "body-parser";
 import config from './config';
 import routes from './api';
+import database from './services/database';
 // @ts-ignore
 import express, {NextFunction, Request, Response} from 'express';
 
-function startServer() {
+const startServer = () => {
     const app = express();
 
     app.use(bodyParser.json());
@@ -19,11 +20,19 @@ function startServer() {
     });
 
     app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        console.log({err});
+
         return res
             .status(err.status)
             .send({ message: err.message })
             .end();
     });
+
+    database()
+        .then(() => {
+            console.log('database connection established');
+        })
+        .catch(console.error)
 
     app.listen(config.PORT, () => {
         console.log(`App listening on port ${config.PORT}`);
@@ -33,4 +42,4 @@ function startServer() {
     });
 }
 
-startServer();
+startServer()
